@@ -83,7 +83,7 @@ namespace Frm_waypoint
             Thread.CurrentThread.CurrentUICulture = CultureInfo.InvariantCulture;
             InitializeComponent();
 
-            MapManager.Initialize(Path.Combine("world", "minimaps"));
+            MapManager.Initialize(Path.Combine("textures", "Minimap"));
             MapManager.LoadMaps(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "map.csv"));
 
             _mapControl = skiaMapControl;

@@ -16,8 +16,13 @@ Creates NPC paths using parsed packet files and visualizes them on the game map 
 ## Requirements
 
 - Parsed packet files from WowPacketParser
-- Map files in same directory as executable, download maps here: https://drive.google.com/uc?export=download&id=1fFRgY7gVEbK2bwNQA8RTooE6BI9kydsi
+- Map files in same directory as executable  
+Maps for vanilla:
+https://drive.google.com/uc?export=download&id=1SJLoBiyreFb6O5r4EwlDf_PdfmI3t1Zx   
+Maps for tbc/wotlk:
+https://drive.google.com/uc?export=download&id=1Cw0vKgVWV_RRdHoDODLVPxEr7ABlk_4i
 - Database connection (optional, for creature names)
+- Windows 7+
 
 ## Output Support
 

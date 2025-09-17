@@ -15,14 +15,14 @@ public class MapConfig
 public static class MapManager
 {
     private static List<MapConfig> _maps = new List<MapConfig>();
-    private static string _baseTilePath = Path.Combine(Application.StartupPath, "world", "minimaps");
+    private static string _baseTilePath = Path.Combine(Application.StartupPath, "textures", "Minimap");
     private static DateTime _lastLoadTime;
     private static string _currentCsvPath;
 
     public static void Initialize(string baseTilePath = null)
     {
         _baseTilePath = Path.Combine(Application.StartupPath,
-            baseTilePath ?? "world\\minimaps");
+            baseTilePath ?? "textures\\Minimap");
 
         Console.WriteLine($"Tile base path: {_baseTilePath}");
     }
