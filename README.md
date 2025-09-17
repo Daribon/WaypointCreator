@@ -20,7 +20,9 @@ Creates NPC paths using parsed packet files and visualizes them on the game map 
 Maps for vanilla:
 https://drive.google.com/uc?export=download&id=1SJLoBiyreFb6O5r4EwlDf_PdfmI3t1Zx   
 Maps for tbc/wotlk:
-https://drive.google.com/uc?export=download&id=1Cw0vKgVWV_RRdHoDODLVPxEr7ABlk_4i
+https://drive.google.com/uc?export=download&id=1Cw0vKgVWV_RRdHoDODLVPxEr7ABlk_4i  
+If you wish to convert maps on your own, follow tutorial:
+https://gist.github.com/Daribon/fef11759ead63be0f90ccabe12fff960
 - Database connection (optional, for creature names)
 - Windows 7+
 
