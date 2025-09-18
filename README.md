@@ -29,7 +29,7 @@ https://gist.github.com/Daribon/fef11759ead63be0f90ccabe12fff960
 ## Output Support
 
 - VMaNGOS (`creature_movement`)
-- TrinityCore (`waypoint_path`)
+- TrinityCore (`waypoint_data`)
 - CMaNGOS (`creature_movement`)
 - C++ code generation
 
