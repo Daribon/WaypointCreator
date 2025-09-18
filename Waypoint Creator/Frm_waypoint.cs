@@ -1352,7 +1352,7 @@ namespace Frm_waypoint
 
             for (int i = 0; i < gridWaypoint.RowCount; i++)
             {
-                string facing = gridWaypoint[4, i].Value?.ToString() ?? "NULL";
+                string facing = (gridWaypoint[4, i].Value?.ToString() == "100") ? "NULL" : gridWaypoint[4, i].Value?.ToString() ?? "NULL";
                 string waittime = string.IsNullOrEmpty(gridWaypoint[6, i].Value?.ToString()) ? "0" : gridWaypoint[6, i].Value.ToString();
                 sb.Append($"(@PATH, {i + 1}, {gridWaypoint[1, i].Value}, {gridWaypoint[2, i].Value}, {gridWaypoint[3, i].Value}, {facing}, {waittime}, 0, 0, 100, 0)");
                 sb.AppendLine(i < gridWaypoint.RowCount - 1 ? "," : ";");
