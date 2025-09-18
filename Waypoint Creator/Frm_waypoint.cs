@@ -1320,7 +1320,7 @@ namespace Frm_waypoint
 
             sb.AppendLine($"-- Pathing for {creature_name} Entry: {creature_entry}");
             sb.AppendLine("SET @GUID := XXXXXX;");
-            sb.AppendLine($"UPDATE `creature` SET `MovementType`=2, `spawndist`=0, `position_x`={gridWaypoint[1, 0].Value}, `position_y`={gridWaypoint[2, 0].Value}, `position_z`={gridWaypoint[3, 0].Value}, `orientation`={gridWaypoint[4, 0].Value ?? "100"} WHERE `guid`=@GUID;");
+            sb.AppendLine($"UPDATE `creature` SET `MovementType`=2, `spawndist`=0, `position_x`={gridWaypoint[1, 0].Value}, `position_y`={gridWaypoint[2, 0].Value}, `position_z`={gridWaypoint[3, 0].Value} WHERE `guid`=@GUID;");
             sb.AppendLine("DELETE FROM `creature_movement` WHERE `Id`=@GUID;");
             sb.AppendLine("INSERT INTO `creature_movement` (`Id`, `Point`, `PositionX`, `PositionY`, `PositionZ`, `Orientation`, `WaitTime`, `ScriptId`) VALUES");
 
@@ -1346,7 +1346,7 @@ namespace Frm_waypoint
             sb.AppendLine($"-- Pathing for {creature_name} Entry: {creature_entry}");
             sb.AppendLine("SET @GUID := XXXXXX;");
             sb.AppendLine($"SET @PATH := @GUID * 10;");
-            sb.AppendLine($"UPDATE `creature` SET `MovementType`=2, `spawndist`=0, `position_x`={gridWaypoint[1, 0].Value}, `position_y`={gridWaypoint[2, 0].Value}, `position_z`={gridWaypoint[3, 0].Value}, `orientation`={gridWaypoint[4, 0].Value ?? "NULL"} WHERE `guid`=@GUID;");
+            sb.AppendLine($"UPDATE `creature` SET `MovementType`=2, `spawndist`=0, `position_x`={gridWaypoint[1, 0].Value}, `position_y`={gridWaypoint[2, 0].Value}, `position_z`={gridWaypoint[3, 0].Value} WHERE `guid`=@GUID;");
             sb.AppendLine($"DELETE FROM `waypoint_data` WHERE `id`=@PATH;");
             sb.AppendLine($"INSERT INTO `waypoint_data` (`id`, `point`, `position_x`, `position_y`, `position_z`, `orientation`, `delay`, `move_type`, `action`, `action_chance`, `wpguid`) VALUES");
 
