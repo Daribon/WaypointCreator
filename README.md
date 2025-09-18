@@ -1,4 +1,4 @@
-# ![logo](images/Fire%20Elemental.png) Waypoint Creator VMaNGOS
+# ![logo](images/Fire%20Elemental.png) Mass Waypoint Creator
 
 Fork of Waypoint Creator with main focus on handling large sniffs better.
 

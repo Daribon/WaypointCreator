@@ -1,6 +1,7 @@
 ﻿using SkiaSharp;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -48,7 +49,7 @@ namespace Frm_waypoint
 
             if (!Directory.Exists(mapPath))
             {
-                Console.WriteLine($"[ERROR] Map directory not found: {mapPath}");
+                Debug.WriteLine($"[ERROR] Map directory not found: {mapPath}");
                 return tiles;
             }
 
@@ -120,7 +121,7 @@ namespace Frm_waypoint
             }
             catch
             {
-                Console.WriteLine($"[ERROR] Failed to load tile: {tile.FilePath}");
+                Debug.WriteLine($"[ERROR] Failed to load tile: {tile.FilePath}");
                 return null;
             }
         }

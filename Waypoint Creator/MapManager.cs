@@ -24,7 +24,6 @@ public static class MapManager
         _baseTilePath = Path.Combine(Application.StartupPath,
             baseTilePath ?? "textures\\Minimap");
 
-        Console.WriteLine($"Tile base path: {_baseTilePath}");
     }
 
     public static void LoadMaps(string csvPath)

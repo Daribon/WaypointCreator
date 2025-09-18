@@ -3,6 +3,7 @@ using SkiaSharp.Views.Desktop;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Diagnostics;
 using System.Drawing;
 using System.Globalization;
 using System.IO;
@@ -451,13 +452,15 @@ namespace Frm_waypoint
                 {
                     DrawLabel(canvas, items[0].Index.ToString(), center, textFont, textLinePaint, baseSpacing);
                 }
-                else if (count <= maxLabelsToShow)
+                else
                 {
-                    float radius = baseSpacing * (1 + count * 0.15f);
-                    float angleIncrement = Math.Max(minAngleIncrement, (2 * (float)Math.PI) / count);
+                    float radius = baseSpacing * (1 + Math.Min(count, maxLabelsToShow) * 0.15f);
+                    float angleIncrement = Math.Max(minAngleIncrement, (2 * (float)Math.PI) / Math.Min(count, maxLabelsToShow));
                     float currentAngle = (float)Math.PI / 2;
 
-                    for (int i = 0; i < count; i++)
+                    int labelsToDraw = Math.Min(count, maxLabelsToShow);
+
+                    for (int i = 0; i < labelsToDraw; i++)
                     {
                         var labelPos = new SKPoint(
                             center.X + radius * (float)Math.Cos(currentAngle),
@@ -467,6 +470,20 @@ namespace Frm_waypoint
                         canvas.DrawLine(center.X, center.Y, labelPos.X, labelPos.Y, textLinePaint);
                         DrawTextWithShadow(canvas, items[i].Index.ToString(), labelPos, textFont);
                         currentAngle += angleIncrement;
+                    }
+
+                    // If there are more markers than labels shown, add indicator
+                    if (count > maxLabelsToShow)
+                    {
+                        var ellipsisPos = new SKPoint(
+                            center.X + radius * (float)Math.Cos(currentAngle),
+                            center.Y - radius * (float)Math.Sin(currentAngle)
+                        );
+
+                        canvas.DrawLine(center.X, center.Y, ellipsisPos.X, ellipsisPos.Y, textLinePaint);
+
+                        var offsetEllipsisPos = new SKPoint(ellipsisPos.X, ellipsisPos.Y + 2);
+                        DrawTextWithShadow(canvas, "...", offsetEllipsisPos, textFont);
                     }
                 }
             }
@@ -613,15 +630,12 @@ namespace Frm_waypoint
 
         private void ListBox_SelectedIndexChanged(object sender, System.EventArgs e)
         {
-            Console.WriteLine("ListBox selection changed!");
             if (listBox.SelectedItem == null)
             {
-                Console.WriteLine("No item selected");
                 return;
             }
 
             string selectedText = listBox.SelectedItem.ToString();
-            Console.WriteLine($"Selected: {selectedText}");
 
             string[] parts = selectedText.Split(new[] { " - ", " (" }, StringSplitOptions.RemoveEmptyEntries);
 
@@ -631,14 +645,13 @@ namespace Frm_waypoint
                 creature_name = parts[1];
                 string displayedLowGuid = parts[2].TrimEnd(')');
 
-                Console.WriteLine($"Parsed - Entry: {creature_entry}, Name: {creature_name}, LowGuid: {displayedLowGuid}");
+                Debug.WriteLine($"\nParsed - Entry: {creature_entry}, Name: {creature_name}, LowGuid: {displayedLowGuid}");
 
                 creature_guid = FindFullGuidByLowGuid(displayedLowGuid, creature_entry);
-                Console.WriteLine($"Full GUID: {creature_guid}");
+                Debug.WriteLine($"Full GUID: {creature_guid}");
             }
 
             FillGrid();
-            PlotCurrentWaypoints();
         }
 
         private string FindFullGuidByLowGuid(string lowGuid, string entry)
@@ -697,15 +710,15 @@ namespace Frm_waypoint
         {
             if (gridWaypoint.RowCount == 0)
             {
-                Console.WriteLine("[DEBUG] PlotCurrentWaypoints: grid is empty");
+                Debug.WriteLine("[DEBUG] PlotCurrentWaypoints: grid is empty");
                 return;
             }
 
-            Console.WriteLine($"[DEBUG] PlotCurrentWaypoints: Current mapID={mapID}");
+            Debug.WriteLine($"[DEBUG] PlotCurrentWaypoints: Current mapID={mapID}");
 
             if (!int.TryParse(mapID, out int mapId))
             {
-                Console.WriteLine($"[WARN] Invalid mapID '{mapID}', using fallback map 0");
+                Debug.WriteLine($"[WARN] Invalid mapID '{mapID}', using fallback map 0");
                 mapId = 0;
             }
 
@@ -727,11 +740,11 @@ namespace Frm_waypoint
                     float x = float.Parse(gridWaypoint[1, i].Value.ToString());
                     float y = float.Parse(gridWaypoint[2, i].Value.ToString());
                     gameWaypoints.Add(new PointF(x, y));
-                    Console.WriteLine($"[DEBUG] Game waypoint {i}: X={x}, Y={y}");
+                    Debug.WriteLine($"[DEBUG] Game waypoint {i}: X={x}, Y={y}");
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"[ERROR] Failed to parse waypoint {i}: {ex.Message}");
+                    Debug.WriteLine($"[ERROR] Failed to parse waypoint {i}: {ex.Message}");
                 }
             }
 
@@ -744,7 +757,7 @@ namespace Frm_waypoint
             const float mapSize = 34133.33f;
             float worldX = (tileX * tileSize) - (mapSize / 2) + (tileSize / 2);
             float worldY = (tileY * tileSize) - (mapSize / 2) + (tileSize / 2);
-            Console.WriteLine($"TileToWorldCoords: Input tile ({tileX},{tileY}) -> World coords ({worldX:F3},{worldY:F3})");
+            Debug.WriteLine($"TileToWorldCoords: Input tile ({tileX},{tileY}) -> World coords ({worldX:F3},{worldY:F3})");
             return new PointF(worldX, worldY);
         }
 
@@ -769,7 +782,7 @@ namespace Frm_waypoint
                 {
                     var worldPoint = _mapProvider.GameToWorld(p);
                     worldWaypoints.Add(worldPoint);
-                    Console.WriteLine($"Waypoint: Game({p.X:F1},{p.Y:F1}) -> World({worldPoint.X:F1},{worldPoint.Y:F1})");
+                    Debug.WriteLine($"Waypoint: Game({p.X:F1},{p.Y:F1}) -> World({worldPoint.X:F1},{worldPoint.Y:F1})");
                 }
 
                 // Build path in world coordinates
@@ -817,7 +830,7 @@ namespace Frm_waypoint
                     float centerX = worldWaypoints.Average(p => p.X);
                     float centerY = worldWaypoints.Average(p => p.Y);
                     _mapProvider.Center = new PointF(centerX, centerY);
-                    Console.WriteLine($"Centering at: World({centerX:F1},{centerY:F1})");
+                    Debug.WriteLine($"Centering at: World({centerX:F1},{centerY:F1})");
 
                     // Calculate optimal zoom
                     if (worldWaypoints.Count > 1)
@@ -835,7 +848,7 @@ namespace Frm_waypoint
 
                         _mapProvider.Zoom = Math.Min(zoomX, zoomY) * 0.9f;
                         _mapProvider.Zoom = Math.Max(0.5f, Math.Min(_mapProvider.Zoom, 1.5f));
-                        Console.WriteLine($"Calculated Zoom: {_mapProvider.Zoom:F2} (X:{zoomX:F2}, Y:{zoomY:F2})");
+                        Debug.WriteLine($"Calculated Zoom: {_mapProvider.Zoom:F2} (X:{zoomX:F2}, Y:{zoomY:F2})");
                     }
                     else
                     {
@@ -847,7 +860,7 @@ namespace Frm_waypoint
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error loading NPC path: {ex}");
+                Debug.WriteLine($"Error loading NPC path: {ex}");
                 MessageBox.Show($"Error loading path: {ex.Message}");
             }
         }
@@ -928,7 +941,6 @@ namespace Frm_waypoint
                                 if (packetline[i] == "Map:")
                                 {
                                     mapID = packetline[i + 1];
-                                    Console.WriteLine($"Extracted mapID: {mapID}");
                                     break;
                                 }
                             }
@@ -964,7 +976,6 @@ namespace Frm_waypoint
                     if (!string.IsNullOrEmpty(sniff.entry))
                     {
                         waypoints.Rows.Add(sniff.entry, sniff.guid, sniff.x, sniff.y, sniff.z, sniff.o, sniff.time, mapID);
-                        Console.WriteLine($"Added waypoint: Entry={sniff.entry}, Map={mapID}, X={sniff.x}, Y={sniff.y}");
                         sniff.entry = "";
                     }
                 }
@@ -1084,8 +1095,7 @@ namespace Frm_waypoint
 
         public void FillGrid()
         {
-            Console.WriteLine("\nFilling grid...");
-            Console.WriteLine($"Current creature_guid: {creature_guid}");
+            Debug.WriteLine("Filling grid...");
 
             movePackets = waypoints.Clone();
             int matches = 0;
@@ -1101,13 +1111,13 @@ namespace Frm_waypoint
                 }
             }
 
-            Console.WriteLine($"Found {matches} matching waypoints");
+            Debug.WriteLine($"Found {matches} matching waypoints");
 
             if (movePackets.Rows.Count > 0)
             {
                 // Get mapID from the first waypoint
                 mapID = movePackets.Rows[0].Field<string>(7);
-                Console.WriteLine($"Using mapID {mapID} from waypoint data");
+                Debug.WriteLine($"Using mapID {mapID} from waypoint data");
 
                 gridWaypoint.Rows.Clear();
 
@@ -1284,16 +1294,16 @@ namespace Frm_waypoint
             var sb = new StringBuilder();
 
             sb.AppendLine($"-- Pathing for {creature_name} Entry: {creature_entry}");
-            sb.AppendLine("SET @NPC := XXXXXX;");
-            sb.AppendLine($"UPDATE `creature` SET `wander_distance`=0, `movement_type`=2, `position_x`={gridWaypoint[1, 0].Value}, `position_y`={gridWaypoint[2, 0].Value}, `position_z`={gridWaypoint[3, 0].Value} WHERE `guid`=@NPC;");
-            sb.AppendLine("DELETE FROM `creature_movement` WHERE `id`=@NPC;");
+            sb.AppendLine("SET @GUID := XXXXXX;");
+            sb.AppendLine($"UPDATE `creature` SET `wander_distance`=0, `movement_type`=2, `position_x`={gridWaypoint[1, 0].Value}, `position_y`={gridWaypoint[2, 0].Value}, `position_z`={gridWaypoint[3, 0].Value} WHERE `guid`=@GUID;");
+            sb.AppendLine("DELETE FROM `creature_movement` WHERE `id`=@GUID;");
             sb.AppendLine("INSERT INTO `creature_movement` (`id`,`point`,`position_x`,`position_y`,`position_z`,`orientation`,`waittime`,`wander_distance`,`script_id`) VALUES");
 
             for (int i = 0; i < gridWaypoint.RowCount; i++)
             {
                 string facing = gridWaypoint[4, i].Value?.ToString() ?? "100";
                 string waittime = string.IsNullOrEmpty(gridWaypoint[6, i].Value?.ToString()) ? "0" : gridWaypoint[6, i].Value.ToString();
-                sb.Append($"(@NPC, {i + 1}, {gridWaypoint[1, i].Value}, {gridWaypoint[2, i].Value}, {gridWaypoint[3, i].Value}, {facing}, {waittime}, 0, 0)");
+                sb.Append($"(@GUID, {i + 1}, {gridWaypoint[1, i].Value}, {gridWaypoint[2, i].Value}, {gridWaypoint[3, i].Value}, {facing}, {waittime}, 0, 0)");
                 sb.AppendLine(i < gridWaypoint.RowCount - 1 ? "," : ";");
             }
 
@@ -1309,16 +1319,16 @@ namespace Frm_waypoint
             var sb = new StringBuilder();
 
             sb.AppendLine($"-- Pathing for {creature_name} Entry: {creature_entry}");
-            sb.AppendLine("SET @NPC := XXXXXX;");
-            sb.AppendLine($"UPDATE `creature` SET `MovementType`=2, `spawndist`=0, `position_x`={gridWaypoint[1, 0].Value}, `position_y`={gridWaypoint[2, 0].Value}, `position_z`={gridWaypoint[3, 0].Value}, `orientation`={gridWaypoint[4, 0].Value ?? "100"} WHERE `guid`=@NPC;");
-            sb.AppendLine("DELETE FROM `creature_movement` WHERE `Id`=@NPC;");
+            sb.AppendLine("SET @GUID := XXXXXX;");
+            sb.AppendLine($"UPDATE `creature` SET `MovementType`=2, `spawndist`=0, `position_x`={gridWaypoint[1, 0].Value}, `position_y`={gridWaypoint[2, 0].Value}, `position_z`={gridWaypoint[3, 0].Value}, `orientation`={gridWaypoint[4, 0].Value ?? "100"} WHERE `guid`=@GUID;");
+            sb.AppendLine("DELETE FROM `creature_movement` WHERE `Id`=@GUID;");
             sb.AppendLine("INSERT INTO `creature_movement` (`Id`, `Point`, `PositionX`, `PositionY`, `PositionZ`, `Orientation`, `WaitTime`, `ScriptId`) VALUES");
 
             for (int i = 0; i < gridWaypoint.RowCount; i++)
             {
                 string facing = gridWaypoint[4, i].Value?.ToString() ?? "100";
                 string waittime = string.IsNullOrEmpty(gridWaypoint[6, i].Value?.ToString()) ? "0" : gridWaypoint[6, i].Value.ToString();
-                sb.Append($"(@NPC, {i + 1}, {gridWaypoint[1, i].Value}, {gridWaypoint[2, i].Value}, {gridWaypoint[3, i].Value}, {facing}, {waittime}, 0)");
+                sb.Append($"(@GUID, {i + 1}, {gridWaypoint[1, i].Value}, {gridWaypoint[2, i].Value}, {gridWaypoint[3, i].Value}, {facing}, {waittime}, 0)");
                 sb.AppendLine(i < gridWaypoint.RowCount - 1 ? "," : ";");
             }
 
@@ -1333,24 +1343,21 @@ namespace Frm_waypoint
             string lowGuid = ExtractLowGuid(creature_guid);
             var sb = new StringBuilder();
 
-            sb.AppendLine($"-- {creature_name} (Entry: {creature_entry})");
-            sb.AppendLine($"SET @ENTRY := {creature_entry};");
-            sb.AppendLine($"SET @PATH := @ENTRY * 100;");
-            sb.AppendLine($"DELETE FROM `waypoint_path` WHERE `PathId` = @PATH;");
-            sb.AppendLine($"INSERT INTO `waypoint_path` VALUES (@PATH, 1, 0, '{creature_name.Replace("'", "''")}');");
-            sb.AppendLine();
-            sb.AppendLine($"DELETE FROM `waypoint_path_node` WHERE `PathId` = @PATH;");
-            sb.AppendLine($"INSERT INTO `waypoint_path_node` VALUES");
+            sb.AppendLine($"-- Pathing for {creature_name} Entry: {creature_entry}");
+            sb.AppendLine("SET @GUID := XXXXXX;");
+            sb.AppendLine($"SET @PATH := @GUID * 10;");
+            sb.AppendLine($"UPDATE `creature` SET `MovementType`=2, `spawndist`=0, `position_x`={gridWaypoint[1, 0].Value}, `position_y`={gridWaypoint[2, 0].Value}, `position_z`={gridWaypoint[3, 0].Value}, `orientation`={gridWaypoint[4, 0].Value ?? "NULL"} WHERE `guid`=@GUID;");
+            sb.AppendLine($"DELETE FROM `waypoint_data` WHERE `id`=@PATH;");
+            sb.AppendLine($"INSERT INTO `waypoint_data` (`id`, `point`, `position_x`, `position_y`, `position_z`, `orientation`, `delay`, `move_type`, `action`, `action_chance`, `wpguid`) VALUES");
 
             for (int i = 0; i < gridWaypoint.RowCount; i++)
             {
                 string facing = gridWaypoint[4, i].Value?.ToString() ?? "NULL";
                 string waittime = string.IsNullOrEmpty(gridWaypoint[6, i].Value?.ToString()) ? "0" : gridWaypoint[6, i].Value.ToString();
-                sb.Append($"(@PATH, {i}, {gridWaypoint[1, i].Value}, {gridWaypoint[2, i].Value}, {gridWaypoint[3, i].Value}, {facing}, {waittime})");
+                sb.Append($"(@PATH, {i + 1}, {gridWaypoint[1, i].Value}, {gridWaypoint[2, i].Value}, {gridWaypoint[3, i].Value}, {facing}, {waittime}, 0, 0, 100, 0)");
                 sb.AppendLine(i < gridWaypoint.RowCount - 1 ? "," : ";");
             }
 
-            sb.AppendLine();
             sb.AppendLine($"-- Full: {creature_guid} | Low: {lowGuid}");
             sb.AppendLine($"-- .go xyz {gridWaypoint[1, 0].Value} {gridWaypoint[2, 0].Value} {gridWaypoint[3, 0].Value}\r\n");
 
